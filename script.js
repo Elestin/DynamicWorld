@@ -29,6 +29,9 @@ function displayFactions() {
             factionDiv.innerHTML = `
                 <h2>${faction.name}</h2>
                 <p>Power: ${faction.power}</p>
+                <p>Leader: ${faction.leader || 'Unknown'}</p>
+                <p>Description: ${faction.description || 'No description'}</p>
+                <p>Goals: ${faction.goals || 'No goals'}</p>
                 <button onclick="removeFaction('${region}', '${faction.name}')">Remove</button>
                 <div>
                     Interactions:
@@ -84,7 +87,14 @@ function rollDice() {
 }
 
 function addFaction(name, region) {
-    const faction = { name, power: 50, interactions: [] }; // Starting power at 50
+    const faction = {
+        name,
+        power: 50, // Starting power at 50
+        interactions: [],
+        leader: prompt("Enter the leader of the faction:"),
+        description: prompt("Enter a brief description of the faction:"),
+        goals: prompt("Enter the goals of the faction:")
+    };
     regions[region].factions.push(faction);
     balancePower();
     displayFactions();
