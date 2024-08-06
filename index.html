@@ -150,23 +150,25 @@
                     faction.power += diceRoll;
 
                     // Apply interactions
-                    if (faction.interaction) {
-                        const interaction = interactions[faction.interaction.type];
-                        const targetFaction = regions[faction.interaction.region].find(f => f.name === faction.interaction.target);
+                    faction.interactions?.forEach(interaction => {
+                        const effect = interactions[interaction.type];
+                        const targetFaction = regions[interaction.region].find(f => f.name === interaction.target);
                         if (targetFaction) {
-                            faction.power += interaction.powerEffect;
-                            logEntries.push(`${faction.name} ${interaction.description} ${targetFaction.name}.`);
+                            faction.power += effect.powerEffect;
+                            logEntries.push(`${faction.name} ${effect.description} ${targetFaction.name}.`);
                         }
-                    }
+                    });
                 });
             }
             document.getElementById('log').innerHTML = logEntries.join('<br>');
+            balancePower();
             displayFactions();
         }
 
         function addFaction(name, region) {
-            const faction = { name, power: 50, interaction: null };
+            const faction = { name, power: 50, interactions: [] };
             regions[region].push(faction);
+            balancePower();
             displayFactions();
         }
 
@@ -174,6 +176,7 @@
             const index = regions[region].findIndex(faction => faction.name === name);
             if (index !== -1) {
                 regions[region].splice(index, 1);
+                balancePower();
                 displayFactions();
             }
         }
@@ -186,12 +189,12 @@
             for (const region in regions) {
                 regions[region].forEach(faction => {
                     const optionA = document.createElement('option');
-                    optionA.value = faction.name;
+                    optionA.value = `${region}:${faction.name}`;
                     optionA.textContent = `${faction.name} (${region})`;
                     factionASelect.appendChild(optionA);
 
                     const optionB = document.createElement('option');
-                    optionB.value = faction.name;
+                    optionB.value = `${region}:${faction.name}`;
                     optionB.textContent = `${faction.name} (${region})`;
                     factionBSelect.appendChild(optionB);
                 });
@@ -199,33 +202,34 @@
         }
 
         function setInteraction() {
-            const factionAName = document.getElementById('factionA').value;
+            const factionAValue = document.getElementById('factionA').value.split(':');
             const interactionType = document.getElementById('interactionType').value;
-            const factionBName = document.getElementById('factionB').value;
-            let factionA, factionB, regionA, regionB;
+            const factionBValue = document.getElementById('factionB').value.split(':');
 
-            for (const region in regions) {
-                regions[region].forEach(faction => {
-                    if (faction.name === factionAName) {
-                        factionA = faction;
-                        regionA = region;
-                    }
-                    if (faction.name === factionBName) {
-                        factionB = faction;
-                        regionB = region;
-                    }
-                });
-            }
+            if (interactionType === 'none') return;
 
-            if (factionA && factionB && interactionType !== 'none') {
-                factionA.interaction = { type: interactionType, target: factionBName, region: regionB };
-                factionB.interaction = { type: interactionType, target: factionAName, region: regionA };
-            } else {
-                factionA.interaction = null;
-                factionB.interaction = null;
+            const [regionA, factionAName] = factionAValue;
+            const [regionB, factionBName] = factionBValue;
+
+            const factionA = regions[regionA].find(f => f.name === factionAName);
+            const factionB = regions[regionB].find(f => f.name === factionBName);
+
+            if (factionA && factionB) {
+                factionA.interactions.push({ type: interactionType, target: factionBName, region: regionB });
+                factionB.interactions.push({ type: interactionType, target: factionAName, region: regionA });
             }
 
             displayFactions();
+        }
+
+        function balancePower() {
+            for (const region in regions) {
+                const totalFactions = regions[region].length;
+                if (totalFactions > 0) {
+                    const powerPerFaction = 100 / totalFactions;
+                    regions[region].forEach(faction => faction.power = powerPerFaction);
+                }
+            }
         }
 
         document.getElementById('addFactionForm').addEventListener('submit', function(event) {
@@ -244,6 +248,7 @@
             const savedConfig = localStorage.getItem('dndFactions');
             if (savedConfig) {
                 Object.assign(regions, JSON.parse(savedConfig));
+                balancePower();
                 displayFactions();
                 alert('Configuration loaded.');
             } else {
