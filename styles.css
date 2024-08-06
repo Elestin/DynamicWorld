@@ -1,58 +1,85 @@
 body {
-    font-family: Arial, sans-serif;
-    background-color: #f4f4f4;
+    font-family: 'Cinzel', serif;
+    background: url('path-to-your-fantasy-background-image.jpg') no-repeat center center fixed;
+    background-size: cover;
+    color: #fff;
     margin: 0;
-    padding: 20px;
+    padding: 0;
 }
-h1 {
-    text-align: center;
-}
-.faction {
-    margin: 10px;
-    padding: 10px;
-    border: 1px solid #000;
-    background-color: #fff;
-    border-radius: 5px;
-}
+
 .container {
+    background: rgba(0, 0, 0, 0.7);
+    border-radius: 15px;
+    padding: 20px;
+    max-width: 800px;
+    margin: 40px auto;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+h1, h2 {
+    text-align: center;
+    font-family: 'Cinzel Decorative', cursive;
+    margin-bottom: 20px;
+}
+
+input, select, button {
+    font-family: 'Cinzel', serif;
+    margin: 10px 0;
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #333;
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    width: calc(100% - 24px);
+}
+
+button {
+    cursor: pointer;
+    background: rgba(0, 0, 0, 0.5);
+    transition: background 0.3s;
+}
+
+button:hover {
+    background: rgba(0, 0, 0, 0.7);
+}
+
+.regions {
     display: flex;
     flex-wrap: wrap;
-    justify-content: center;
+    justify-content: space-around;
 }
+
 .region {
     margin: 10px;
     padding: 10px;
-    border: 1px solid #ccc;
-    background-color: #e0e0e0;
+    border: 1px solid #666;
+    background-color: rgba(0, 0, 0, 0.5);
+    border-radius: 10px;
+    width: 45%;
+}
+
+.faction {
+    margin: 10px 0;
+    padding: 10px;
+    border: 1px solid #444;
+    background-color: rgba(0, 0, 0, 0.3);
     border-radius: 5px;
-    width: calc(20% - 40px);
 }
+
 .faction h2 {
-    margin: 0;
-    padding-bottom: 5px;
+    margin: 0 0 10px 0;
 }
-.faction p {
+
+.faction p, .faction button {
     margin: 5px 0;
 }
-button {
-    display: block;
-    margin: 20px auto;
-    padding: 10px 20px;
-    font-size: 16px;
-    cursor: pointer;
-}
-form {
-    text-align: center;
-    margin: 20px 0;
-}
-input, select {
-    margin: 5px;
-    padding: 5px;
-}
+
 #log {
     margin-top: 20px;
     padding: 10px;
-    background-color: #fff;
-    border: 1px solid #000;
-    border-radius: 5px;
+    background-color: rgba(0, 0, 0, 0.5);
+    border: 1px solid #333;
+    border-radius: 10px;
+    height: 200px;
+    overflow-y: scroll;
 }
