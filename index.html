@@ -68,63 +68,48 @@
 <body>
     <h1>D&D World Factions</h1>
 
-    <form id="interactionForm">
-        <div>
-            <label for="faction1Interaction">Faction 1 Interaction:</label>
-            <select id="faction1Interaction">
-                <option value="none">None</option>
-                <option value="war">War</option>
-                <option value="alliance">Alliance</option>
-                <option value="trade">Trade Agreement</option>
-            </select>
-        </div>
-        <div>
-            <label for="faction2Interaction">Faction 2 Interaction:</label>
-            <select id="faction2Interaction">
-                <option value="none">None</option>
-                <option value="war">War</option>
-                <option value="alliance">Alliance</option>
-                <option value="trade">Trade Agreement</option>
-            </select>
-        </div>
-        <div>
-            <label for="faction3Interaction">Faction 3 Interaction:</label>
-            <select id="faction3Interaction">
-                <option value="none">None</option>
-                <option value="war">War</option>
-                <option value="alliance">Alliance</option>
-                <option value="trade">Trade Agreement</option>
-            </select>
-        </div>
-        <div>
-            <label for="faction4Interaction">Faction 4 Interaction:</label>
-            <select id="faction4Interaction">
-                <option value="none">None</option>
-                <option value="war">War</option>
-                <option value="alliance">Alliance</option>
-                <option value="trade">Trade Agreement</option>
-            </select>
-        </div>
-        <button type="submit">Submit</button>
+    <form id="addFactionForm">
+        <input type="text" id="factionName" placeholder="Faction Name" required>
+        <select id="factionRegion">
+            <option value="Region 1">Region 1</option>
+            <option value="Region 2">Region 2</option>
+            <option value="Region 3">Region 3</option>
+            <option value="Region 4">Region 4</option>
+            <option value="Region 5">Region 5</option>
+        </select>
+        <button type="submit">Add Faction</button>
     </form>
+
+    <div id="interactionForm">
+        <h2>Set Interactions</h2>
+        <select id="factionA">
+            <!-- Options will be populated dynamically -->
+        </select>
+        <select id="interactionType">
+            <option value="none">None</option>
+            <option value="war">War</option>
+            <option value="alliance">Alliance</option>
+            <option value="trade">Trade Agreement</option>
+        </select>
+        <select id="factionB">
+            <!-- Options will be populated dynamically -->
+        </select>
+        <button onclick="setInteraction()">Set Interaction</button>
+    </div>
 
     <div id="regions" class="container">
         <!-- Region elements will be dynamically added here -->
     </div>
+    <button onclick="rollDice()">Roll Dice</button>
+    <button onclick="saveConfiguration()">Save Configuration</button>
+    <button onclick="loadConfiguration()">Load Configuration</button>
     <div id="log"></div>
 
     <script>
         const regions = {
-            'Region 1': [
-                { name: 'Faction 1', power: 25 },
-                { name: 'Faction 2', power: 25 }
-            ],
-            'Region 2': [
-                { name: 'Faction 3', power: 50 }
-            ],
-            'Region 3': [
-                { name: 'Faction 4', power: 50 }
-            ],
+            'Region 1': [],
+            'Region 2': [],
+            'Region 3': [],
             'Region 4': [],
             'Region 5': []
         };
@@ -148,41 +133,123 @@
                     factionDiv.innerHTML = `
                         <h2>${faction.name}</h2>
                         <p>Power: ${faction.power}</p>
+                        <button onclick="removeFaction('${region}', '${faction.name}')">Remove</button>
                     `;
                     regionDiv.appendChild(factionDiv);
                 });
                 regionsDiv.appendChild(regionDiv);
             }
+            populateInteractionOptions();
         }
 
-        function applyInteractions(factions, interactionData) {
+        function rollDice() {
             const logEntries = [];
-            factions.forEach((faction, index) => {
-                const interaction = interactionData[index];
-                if (interaction !== 'none') {
-                    const effect = interactions[interaction];
-                    faction.power += effect.powerEffect;
-                    logEntries.push(`${faction.name} ${effect.description} another faction.`);
-                }
-            });
-            return logEntries;
-        }
+            for (const region in regions) {
+                regions[region].forEach(faction => {
+                    const diceRoll = Math.floor(Math.random() * 20) + 1;
+                    faction.power += diceRoll;
 
-        document.getElementById('interactionForm').addEventListener('submit', function(event) {
-            event.preventDefault();
-            const interactionData = [
-                document.getElementById('faction1Interaction').value,
-                document.getElementById('faction2Interaction').value,
-                document.getElementById('faction3Interaction').value,
-                document.getElementById('faction4Interaction').value
-            ];
-
-            const allFactions = [].concat(...Object.values(regions));
-            const logEntries = applyInteractions(allFactions, interactionData);
-
+                    // Apply interactions
+                    if (faction.interaction) {
+                        const interaction = interactions[faction.interaction.type];
+                        const targetFaction = regions[faction.interaction.region].find(f => f.name === faction.interaction.target);
+                        if (targetFaction) {
+                            faction.power += interaction.powerEffect;
+                            logEntries.push(`${faction.name} ${interaction.description} ${targetFaction.name}.`);
+                        }
+                    }
+                });
+            }
             document.getElementById('log').innerHTML = logEntries.join('<br>');
             displayFactions();
+        }
+
+        function addFaction(name, region) {
+            const faction = { name, power: 50, interaction: null };
+            regions[region].push(faction);
+            displayFactions();
+        }
+
+        function removeFaction(region, name) {
+            const index = regions[region].findIndex(faction => faction.name === name);
+            if (index !== -1) {
+                regions[region].splice(index, 1);
+                displayFactions();
+            }
+        }
+
+        function populateInteractionOptions() {
+            const factionASelect = document.getElementById('factionA');
+            const factionBSelect = document.getElementById('factionB');
+            factionASelect.innerHTML = '';
+            factionBSelect.innerHTML = '';
+            for (const region in regions) {
+                regions[region].forEach(faction => {
+                    const optionA = document.createElement('option');
+                    optionA.value = faction.name;
+                    optionA.textContent = `${faction.name} (${region})`;
+                    factionASelect.appendChild(optionA);
+
+                    const optionB = document.createElement('option');
+                    optionB.value = faction.name;
+                    optionB.textContent = `${faction.name} (${region})`;
+                    factionBSelect.appendChild(optionB);
+                });
+            }
+        }
+
+        function setInteraction() {
+            const factionAName = document.getElementById('factionA').value;
+            const interactionType = document.getElementById('interactionType').value;
+            const factionBName = document.getElementById('factionB').value;
+            let factionA, factionB, regionA, regionB;
+
+            for (const region in regions) {
+                regions[region].forEach(faction => {
+                    if (faction.name === factionAName) {
+                        factionA = faction;
+                        regionA = region;
+                    }
+                    if (faction.name === factionBName) {
+                        factionB = faction;
+                        regionB = region;
+                    }
+                });
+            }
+
+            if (factionA && factionB && interactionType !== 'none') {
+                factionA.interaction = { type: interactionType, target: factionBName, region: regionB };
+                factionB.interaction = { type: interactionType, target: factionAName, region: regionA };
+            } else {
+                factionA.interaction = null;
+                factionB.interaction = null;
+            }
+
+            displayFactions();
+        }
+
+        document.getElementById('addFactionForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const name = document.getElementById('factionName').value;
+            const region = document.getElementById('factionRegion').value;
+            addFaction(name, region);
         });
+
+        function saveConfiguration() {
+            localStorage.setItem('dndFactions', JSON.stringify(regions));
+            alert('Configuration saved.');
+        }
+
+        function loadConfiguration() {
+            const savedConfig = localStorage.getItem('dndFactions');
+            if (savedConfig) {
+                Object.assign(regions, JSON.parse(savedConfig));
+                displayFactions();
+                alert('Configuration loaded.');
+            } else {
+                alert('No configuration found.');
+            }
+        }
 
         window.onload = displayFactions;
     </script>
