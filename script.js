@@ -20,7 +20,8 @@ function displayFactions() {
         regionDiv.className = 'region';
         regionDiv.innerHTML = `
             <h3>${region}</h3>
-            <input type="number" min="0" max="100" value="${regions[region].authority}" 
+            <label for="authority-${region}">City Guard Power/Lawfulness:</label>
+            <input type="number" id="authority-${region}" min="0" max="100" value="${regions[region].authority}" 
                 onchange="setAuthority('${region}', this.value)" placeholder="Authority">
         `;
         regions[region].factions.forEach(faction => {
@@ -39,7 +40,7 @@ function displayFactions() {
                         ${faction.interactions.map(interaction => `
                             <li>
                                 ${interaction.type} with ${interaction.target} 
-                                <button onclick="removeInteraction('${region}', '${faction.name}', '${interaction.target}', '${interaction.type}')">Remove</button>
+                                <button onclick="removeInteraction('${region}', '${interaction.target}', '${interaction.type}')">Remove</button>
                             </li>
                         `).join('')}
                     </ul>
@@ -54,15 +55,17 @@ function displayFactions() {
 
 function setAuthority(region, value) {
     regions[region].authority = parseInt(value);
-    balancePower();
+    balancePower(region);
     displayFactions();
 }
 
 function rollDice() {
     const logEntries = [];
     for (const region in regions) {
-        const totalFactions = regions[region].factions.length;
-        if (totalFactions > 1) {
+        const totalPower = 100 - regions[region].authority;
+        let currentTotalPower = regions[region].factions.reduce((sum, faction) => sum + faction.power, 0);
+
+        if (regions[region].factions.length > 1) {
             regions[region].factions.forEach(faction => {
                 // Fluctuate power by a random value between -10 and 10
                 const powerChange = Math.floor(Math.random() * 21) - 10;
@@ -84,14 +87,14 @@ function rollDice() {
                 });
             });
 
-            // Rebalance power to ensure total is 100
-            let totalPower = regions[region].factions.reduce((sum, faction) => sum + faction.power, 0);
-            while (totalPower !== 100) {
-                const difference = totalPower - 100;
-                const adjustFaction = regions[region].factions[Math.floor(Math.random() * totalFactions)];
+            // Adjust total power to be exactly the allowed total power
+            currentTotalPower = regions[region].factions.reduce((sum, faction) => sum + faction.power, 0);
+            while (currentTotalPower !== totalPower) {
+                const difference = currentTotalPower - totalPower;
+                const adjustFaction = regions[region].factions[Math.floor(Math.random() * regions[region].factions.length)];
                 adjustFaction.power -= difference;
                 if (adjustFaction.power < 0) adjustFaction.power = 0;
-                totalPower = regions[region].factions.reduce((sum, faction) => sum + faction.power, 0);
+                currentTotalPower = regions[region].factions.reduce((sum, faction) => sum + faction.power, 0);
             }
         }
     }
@@ -109,7 +112,7 @@ function addFaction(name, region) {
         goals: prompt("Enter the goals of the faction:")
     };
     regions[region].factions.push(faction);
-    balancePower();
+    balancePower(region);
     displayFactions();
 }
 
@@ -117,7 +120,7 @@ function removeFaction(region, name) {
     const index = regions[region].factions.findIndex(faction => faction.name === name);
     if (index !== -1) {
         regions[region].factions.splice(index, 1);
-        balancePower();
+        balancePower(region);
         displayFactions();
     }
 }
@@ -173,11 +176,17 @@ function setInteraction() {
     displayFactions();
 }
 
-function balancePower() {
-    for (const region in regions) {
-        const totalFactions = regions[region].factions.length;
-        const availablePower = 100 - regions[region].authority;
-        if (totalFactions > 0 && availablePower >= 0) {
+function balancePower(region) {
+    const totalFactions = regions[region].factions.length;
+    const availablePower = 100 - regions[region].authority;
+    if (totalFactions > 0 && availablePower >= 0) {
+        let totalPower = regions[region].factions.reduce((sum, faction) => sum + faction.power, 0);
+        if (totalPower > availablePower) {
+            // Adjust power to ensure total is not more than available power
+            regions[region].factions.forEach(faction => {
+                faction.power = (faction.power / totalPower) * availablePower;
+            });
+        } else if (totalPower < availablePower) {
             const powerPerFaction = availablePower / totalFactions;
             regions[region].factions.forEach(faction => faction.power = powerPerFaction);
         }
@@ -211,7 +220,7 @@ function loadConfiguration(event) {
     reader.onload = function(event) {
         const loadedRegions = JSON.parse(event.target.result);
         Object.assign(regions, loadedRegions);
-        balancePower();
+        Object.keys(regions).forEach(region => balancePower(region));
         displayFactions();
         alert('Configuration loaded.');
     };
