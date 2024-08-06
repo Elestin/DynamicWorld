@@ -164,20 +164,30 @@ document.getElementById('addFactionForm').addEventListener('submit', function(ev
 });
 
 function saveConfiguration() {
-    localStorage.setItem('dndFactions', JSON.stringify(regions));
-    alert('Configuration saved.');
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(regions));
+    const downloadAnchorNode = document.createElement('a');
+    downloadAnchorNode.setAttribute("href", dataStr);
+    downloadAnchorNode.setAttribute("download", "dndFactions.json");
+    document.body.appendChild(downloadAnchorNode);
+    downloadAnchorNode.click();
+    downloadAnchorNode.remove();
 }
 
-function loadConfiguration() {
-    const savedConfig = localStorage.getItem('dndFactions');
-    if (savedConfig) {
-        Object.assign(regions, JSON.parse(savedConfig));
+function loadConfiguration(event) {
+    const file = event.target.files[0];
+    if (!file) {
+        alert('No file selected.');
+        return;
+    }
+    const reader = new FileReader();
+    reader.onload = function(event) {
+        const loadedRegions = JSON.parse(event.target.result);
+        Object.assign(regions, loadedRegions);
         balancePower();
         displayFactions();
         alert('Configuration loaded.');
-    } else {
-        alert('No configuration found.');
-    }
+    };
+    reader.readAsText(file);
 }
 
 window.onload = displayFactions;
