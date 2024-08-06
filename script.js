@@ -61,26 +61,39 @@ function setAuthority(region, value) {
 function rollDice() {
     const logEntries = [];
     for (const region in regions) {
-        regions[region].factions.forEach(faction => {
-            // Fluctuate power by a random value between -10 and 10
-            const powerChange = Math.floor(Math.random() * 21) - 10;
-            faction.power += powerChange;
+        const totalFactions = regions[region].factions.length;
+        if (totalFactions > 1) {
+            regions[region].factions.forEach(faction => {
+                // Fluctuate power by a random value between -10 and 10
+                const powerChange = Math.floor(Math.random() * 21) - 10;
+                faction.power += powerChange;
 
-            // Ensure power stays within reasonable bounds
-            if (faction.power < 0) faction.power = 0;
+                // Ensure power stays within reasonable bounds
+                if (faction.power < 0) faction.power = 0;
 
-            logEntries.push(`${faction.name} power changed by ${powerChange}.`);
+                logEntries.push(`${faction.name} power changed by ${powerChange}.`);
 
-            // Apply interactions
-            faction.interactions.forEach(interaction => {
-                const effect = interactions[interaction.type];
-                const targetFaction = regions[interaction.region].factions.find(f => f.name === interaction.target);
-                if (targetFaction) {
-                    faction.power += effect.powerEffect;
-                    logEntries.push(`${faction.name} ${effect.description} ${targetFaction.name}.`);
-                }
+                // Apply interactions
+                faction.interactions.forEach(interaction => {
+                    const effect = interactions[interaction.type];
+                    const targetFaction = regions[interaction.region].factions.find(f => f.name === interaction.target);
+                    if (targetFaction) {
+                        faction.power += effect.powerEffect;
+                        logEntries.push(`${faction.name} ${effect.description} ${targetFaction.name}.`);
+                    }
+                });
             });
-        });
+
+            // Rebalance power to ensure total is 100
+            let totalPower = regions[region].factions.reduce((sum, faction) => sum + faction.power, 0);
+            while (totalPower !== 100) {
+                const difference = totalPower - 100;
+                const adjustFaction = regions[region].factions[Math.floor(Math.random() * totalFactions)];
+                adjustFaction.power -= difference;
+                if (adjustFaction.power < 0) adjustFaction.power = 0;
+                totalPower = regions[region].factions.reduce((sum, faction) => sum + faction.power, 0);
+            }
+        }
     }
     document.getElementById('log').innerHTML += logEntries.join('<br>') + '<br>';
     displayFactions(); // Update display to reflect power changes
