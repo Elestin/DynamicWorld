@@ -59,8 +59,14 @@ function rollDice() {
     const logEntries = [];
     for (const region in regions) {
         regions[region].factions.forEach(faction => {
-            const diceRoll = Math.floor(Math.random() * 20) + 1;
-            faction.power += diceRoll;
+            // Fluctuate power by a random value between -10 and 10
+            const powerChange = Math.floor(Math.random() * 21) - 10;
+            faction.power += powerChange;
+
+            // Ensure power stays within reasonable bounds
+            if (faction.power < 0) faction.power = 0;
+
+            logEntries.push(`${faction.name} power changed by ${powerChange}.`);
 
             // Apply interactions
             faction.interactions.forEach(interaction => {
