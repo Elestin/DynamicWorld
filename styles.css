@@ -1,14 +1,13 @@
 body {
     font-family: 'Cinzel', serif;
-    background: url('path-to-your-fantasy-background-image.jpg') no-repeat center center fixed;
-    background-size: cover;
-    color: #fff;
+    background: url('https://www.transparenttextures.com/patterns/paper-fibers.png'), #3e3e3e;
+    color: #e2e2dc;
     margin: 0;
     padding: 0;
 }
 
 .container {
-    background: rgba(0, 0, 0, 0.7);
+    background: rgba(0, 0, 0, 0.8);
     border-radius: 15px;
     padding: 20px;
     max-width: 800px;
@@ -18,8 +17,9 @@ body {
 
 h1, h2 {
     text-align: center;
-    font-family: 'Cinzel Decorative', cursive;
+    font-family: 'IM Fell English SC', serif;
     margin-bottom: 20px;
+    color: #c9a338;
 }
 
 input, select, button {
@@ -27,20 +27,20 @@ input, select, button {
     margin: 10px 0;
     padding: 10px;
     border-radius: 5px;
-    border: 1px solid #333;
+    border: 1px solid #555;
     background: rgba(255, 255, 255, 0.1);
-    color: #fff;
+    color: #e2e2dc;
     width: calc(100% - 24px);
 }
 
 button {
     cursor: pointer;
-    background: rgba(0, 0, 0, 0.5);
+    background: rgba(0, 0, 0, 0.6);
     transition: background 0.3s;
 }
 
 button:hover {
-    background: rgba(0, 0, 0, 0.7);
+    background: rgba(0, 0, 0, 0.8);
 }
 
 .regions {
@@ -52,8 +52,8 @@ button:hover {
 .region {
     margin: 10px;
     padding: 10px;
-    border: 1px solid #666;
-    background-color: rgba(0, 0, 0, 0.5);
+    border: 1px solid #888;
+    background-color: rgba(0, 0, 0, 0.6);
     border-radius: 10px;
     width: 45%;
 }
@@ -61,13 +61,14 @@ button:hover {
 .faction {
     margin: 10px 0;
     padding: 10px;
-    border: 1px solid #444;
-    background-color: rgba(0, 0, 0, 0.3);
+    border: 1px solid #666;
+    background-color: rgba(0, 0, 0, 0.4);
     border-radius: 5px;
 }
 
 .faction h2 {
     margin: 0 0 10px 0;
+    color: #c9a338;
 }
 
 .faction p, .faction button {
@@ -77,8 +78,8 @@ button:hover {
 #log {
     margin-top: 20px;
     padding: 10px;
-    background-color: rgba(0, 0, 0, 0.5);
-    border: 1px solid #333;
+    background-color: rgba(0, 0, 0, 0.6);
+    border: 1px solid #555;
     border-radius: 10px;
     height: 200px;
     overflow-y: scroll;
