@@ -43,7 +43,7 @@
     </div>
     <button onclick="rollDice()">Roll Dice</button>
     <button onclick="saveConfiguration()">Save Configuration</button>
-    <button onclick="loadConfiguration()">Load Configuration</button>
+    <input type="file" id="loadFile" onchange="loadConfiguration(event)" />
     <div id="log"></div>
 
     <script src="script.js"></script>
