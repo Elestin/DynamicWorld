@@ -30,6 +30,17 @@ function displayFactions() {
                 <h2>${faction.name}</h2>
                 <p>Power: ${faction.power}</p>
                 <button onclick="removeFaction('${region}', '${faction.name}')">Remove</button>
+                <div>
+                    Interactions:
+                    <ul>
+                        ${faction.interactions.map(interaction => `
+                            <li>
+                                ${interaction.type} with ${interaction.target} 
+                                <button onclick="removeInteraction('${region}', '${faction.name}', '${interaction.target}', '${interaction.type}')">Remove</button>
+                            </li>
+                        `).join('')}
+                    </ul>
+                </div>
             `;
             regionDiv.appendChild(factionDiv);
         });
@@ -52,7 +63,7 @@ function rollDice() {
             faction.power += diceRoll;
 
             // Apply interactions
-            faction.interactions?.forEach(interaction => {
+            faction.interactions.forEach(interaction => {
                 const effect = interactions[interaction.type];
                 const targetFaction = regions[interaction.region].factions.find(f => f.name === interaction.target);
                 if (targetFaction) {
@@ -81,6 +92,16 @@ function removeFaction(region, name) {
         balancePower();
         displayFactions();
     }
+}
+
+function removeInteraction(region, factionName, targetName, type) {
+    const faction = regions[region].factions.find(f => f.name === factionName);
+    const targetFaction = regions[region].factions.find(f => f.name === targetName);
+    if (faction && targetFaction) {
+        faction.interactions = faction.interactions.filter(interaction => !(interaction.type === type && interaction.target === targetName));
+        targetFaction.interactions = targetFaction.interactions.filter(interaction => !(interaction.type === type && interaction.target === factionName));
+    }
+    displayFactions();
 }
 
 function populateInteractionOptions() {
