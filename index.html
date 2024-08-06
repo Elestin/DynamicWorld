@@ -94,7 +94,7 @@
         <select id="factionB">
             <!-- Options will be populated dynamically -->
         </select>
-        <button onclick="setInteraction()">Set Interaction</button>
+        <button type="button" onclick="setInteraction()">Set Interaction</button>
     </div>
 
     <div id="regions" class="container">
@@ -107,11 +107,11 @@
 
     <script>
         const regions = {
-            'Region 1': [],
-            'Region 2': [],
-            'Region 3': [],
-            'Region 4': [],
-            'Region 5': []
+            'Region 1': { factions: [], authority: 0 },
+            'Region 2': { factions: [], authority: 0 },
+            'Region 3': { factions: [], authority: 0 },
+            'Region 4': { factions: [], authority: 0 },
+            'Region 5': { factions: [], authority: 0 }
         };
 
         const interactions = {
@@ -126,8 +126,12 @@
             for (const region in regions) {
                 const regionDiv = document.createElement('div');
                 regionDiv.className = 'region';
-                regionDiv.innerHTML = `<h3>${region}</h3>`;
-                regions[region].forEach(faction => {
+                regionDiv.innerHTML = `
+                    <h3>${region}</h3>
+                    <input type="number" min="0" max="100" value="${regions[region].authority}" 
+                        onchange="setAuthority('${region}', this.value)" placeholder="Authority">
+                `;
+                regions[region].factions.forEach(faction => {
                     const factionDiv = document.createElement('div');
                     factionDiv.className = 'faction';
                     factionDiv.innerHTML = `
@@ -142,17 +146,23 @@
             populateInteractionOptions();
         }
 
+        function setAuthority(region, value) {
+            regions[region].authority = parseInt(value);
+            balancePower();
+            displayFactions();
+        }
+
         function rollDice() {
             const logEntries = [];
             for (const region in regions) {
-                regions[region].forEach(faction => {
+                regions[region].factions.forEach(faction => {
                     const diceRoll = Math.floor(Math.random() * 20) + 1;
                     faction.power += diceRoll;
 
                     // Apply interactions
                     faction.interactions?.forEach(interaction => {
                         const effect = interactions[interaction.type];
-                        const targetFaction = regions[interaction.region].find(f => f.name === interaction.target);
+                        const targetFaction = regions[interaction.region].factions.find(f => f.name === interaction.target);
                         if (targetFaction) {
                             faction.power += effect.powerEffect;
                             logEntries.push(`${faction.name} ${effect.description} ${targetFaction.name}.`);
@@ -166,16 +176,16 @@
         }
 
         function addFaction(name, region) {
-            const faction = { name, power: 50, interactions: [] };
-            regions[region].push(faction);
+            const faction = { name, power: 0, interactions: [] };
+            regions[region].factions.push(faction);
             balancePower();
             displayFactions();
         }
 
         function removeFaction(region, name) {
-            const index = regions[region].findIndex(faction => faction.name === name);
+            const index = regions[region].factions.findIndex(faction => faction.name === name);
             if (index !== -1) {
-                regions[region].splice(index, 1);
+                regions[region].factions.splice(index, 1);
                 balancePower();
                 displayFactions();
             }
@@ -187,7 +197,7 @@
             factionASelect.innerHTML = '';
             factionBSelect.innerHTML = '';
             for (const region in regions) {
-                regions[region].forEach(faction => {
+                regions[region].factions.forEach(faction => {
                     const optionA = document.createElement('option');
                     optionA.value = `${region}:${faction.name}`;
                     optionA.textContent = `${faction.name} (${region})`;
@@ -211,8 +221,8 @@
             const [regionA, factionAName] = factionAValue;
             const [regionB, factionBName] = factionBValue;
 
-            const factionA = regions[regionA].find(f => f.name === factionAName);
-            const factionB = regions[regionB].find(f => f.name === factionBName);
+            const factionA = regions[regionA].factions.find(f => f.name === factionAName);
+            const factionB = regions[regionB].factions.find(f => f.name === factionBName);
 
             if (factionA && factionB) {
                 factionA.interactions.push({ type: interactionType, target: factionBName, region: regionB });
@@ -224,10 +234,11 @@
 
         function balancePower() {
             for (const region in regions) {
-                const totalFactions = regions[region].length;
-                if (totalFactions > 0) {
-                    const powerPerFaction = 100 / totalFactions;
-                    regions[region].forEach(faction => faction.power = powerPerFaction);
+                const totalFactions = regions[region].factions.length;
+                const availablePower = 100 - regions[region].authority;
+                if (totalFactions > 0 && availablePower >= 0) {
+                    const powerPerFaction = availablePower / totalFactions;
+                    regions[region].factions.forEach(faction => faction.power = powerPerFaction);
                 }
             }
         }
@@ -235,7 +246,7 @@
         document.getElementById('addFactionForm').addEventListener('submit', function(event) {
             event.preventDefault();
             const name = document.getElementById('factionName').value;
-            const region = document.getElementById('factionRegion').value;
+            const region = document.getElementById('factionRegion').value
             addFaction(name, region);
         });
 
