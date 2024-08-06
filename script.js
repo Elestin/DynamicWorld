@@ -73,7 +73,7 @@ function rollDice() {
             });
         });
     }
-    document.getElementById('log').innerHTML = logEntries.join('<br>');
+    document.getElementById('log').innerHTML += logEntries.join('<br>') + '<br>';
     balancePower();
     displayFactions();
 }
