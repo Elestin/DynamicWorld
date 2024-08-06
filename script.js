@@ -80,12 +80,11 @@ function rollDice() {
         });
     }
     document.getElementById('log').innerHTML += logEntries.join('<br>') + '<br>';
-    balancePower();
-    displayFactions();
+    displayFactions(); // Update display to reflect power changes
 }
 
 function addFaction(name, region) {
-    const faction = { name, power: 0, interactions: [] };
+    const faction = { name, power: 50, interactions: [] }; // Starting power at 50
     regions[region].factions.push(faction);
     balancePower();
     displayFactions();
