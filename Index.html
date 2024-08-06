@@ -5,26 +5,92 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>D&D World Factions</title>
     <style>
-        /* Add your CSS styling here */
         body {
             font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
         }
         .faction {
             margin: 10px;
             padding: 10px;
             border: 1px solid #000;
+            background-color: #fff;
+            border-radius: 5px;
+        }
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .faction h2 {
+            margin: 0;
+            padding-bottom: 5px;
+        }
+        .faction p {
+            margin: 5px 0;
+        }
+        button {
+            display: block;
+            margin: 20px auto;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
         }
     </style>
 </head>
 <body>
     <h1>D&D World Factions</h1>
-    <div id="factions">
+    <div id="factions" class="container">
         <!-- Faction elements will be dynamically added here -->
     </div>
     <button onclick="rollDice()">Roll Dice</button>
 
     <script>
-        // Add your JavaScript here
+        const factions = [
+            { name: 'The Silver Blades', power: 10, territory: 'North City' },
+            { name: 'The Crimson Brotherhood', power: 12, territory: 'South City' },
+            { name: 'Emerald Enclave', power: 8, territory: 'East City' },
+            { name: 'Shadow Syndicate', power: 15, territory: 'West City' }
+        ];
+
+        function displayFactions() {
+            const factionsDiv = document.getElementById('factions');
+            factionsDiv.innerHTML = '';
+            factions.forEach(faction => {
+                const factionDiv = document.createElement('div');
+                factionDiv.className = 'faction';
+                factionDiv.innerHTML = `
+                    <h2>${faction.name}</h2>
+                    <p>Power: ${faction.power}</p>
+                    <p>Territory: ${faction.territory}</p>
+                `;
+                factionsDiv.appendChild(factionDiv);
+            });
+        }
+
+        function rollDice() {
+            factions.forEach(faction => {
+                const diceRoll = Math.floor(Math.random() * 20) + 1;
+                faction.power += diceRoll;
+
+                // Determine faction interactions
+                const opponentIndex = Math.floor(Math.random() * factions.length);
+                if (opponentIndex !== factions.indexOf(faction)) {
+                    const opponent = factions[opponentIndex];
+                    if (diceRoll > opponent.power / 2) {
+                        faction.power += 5;  // Faction wins and gains power
+                        opponent.power -= 5; // Opponent loses power
+                    }
+                }
+            });
+            displayFactions();
+        }
+
+        window.onload = displayFactions;
     </script>
 </body>
 </html>
