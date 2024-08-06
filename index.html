@@ -26,6 +26,14 @@
             flex-wrap: wrap;
             justify-content: center;
         }
+        .region {
+            margin: 10px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            background-color: #e0e0e0;
+            border-radius: 5px;
+            width: calc(20% - 40px);
+        }
         .faction h2 {
             margin: 0;
             padding-bottom: 5px;
@@ -40,55 +48,116 @@
             font-size: 16px;
             cursor: pointer;
         }
+        form {
+            text-align: center;
+            margin: 20px 0;
+        }
+        input, select {
+            margin: 5px;
+            padding: 5px;
+        }
     </style>
 </head>
 <body>
     <h1>D&D World Factions</h1>
-    <div id="factions" class="container">
-        <!-- Faction elements will be dynamically added here -->
+
+    <form id="addFactionForm">
+        <input type="text" id="factionName" placeholder="Faction Name" required>
+        <select id="factionRegion">
+            <option value="Region 1">Region 1</option>
+            <option value="Region 2">Region 2</option>
+            <option value="Region 3">Region 3</option>
+            <option value="Region 4">Region 4</option>
+            <option value="Region 5">Region 5</option>
+        </select>
+        <button type="submit">Add Faction</button>
+    </form>
+
+    <div id="regions" class="container">
+        <!-- Region elements will be dynamically added here -->
     </div>
     <button onclick="rollDice()">Roll Dice</button>
 
     <script>
-        const factions = [
-            { name: 'The Silver Blades', power: 10, territory: 'North City' },
-            { name: 'The Crimson Brotherhood', power: 12, territory: 'South City' },
-            { name: 'Emerald Enclave', power: 8, territory: 'East City' },
-            { name: 'Shadow Syndicate', power: 15, territory: 'West City' }
-        ];
+        const regions = {
+            'Region 1': [],
+            'Region 2': [],
+            'Region 3': [],
+            'Region 4': [],
+            'Region 5': []
+        };
+
+        const maxPower = 100;
 
         function displayFactions() {
-            const factionsDiv = document.getElementById('factions');
-            factionsDiv.innerHTML = '';
-            factions.forEach(faction => {
-                const factionDiv = document.createElement('div');
-                factionDiv.className = 'faction';
-                factionDiv.innerHTML = `
-                    <h2>${faction.name}</h2>
-                    <p>Power: ${faction.power}</p>
-                    <p>Territory: ${faction.territory}</p>
-                `;
-                factionsDiv.appendChild(factionDiv);
-            });
+            const regionsDiv = document.getElementById('regions');
+            regionsDiv.innerHTML = '';
+            for (const region in regions) {
+                const regionDiv = document.createElement('div');
+                regionDiv.className = 'region';
+                regionDiv.innerHTML = `<h3>${region}</h3>`;
+                regions[region].forEach(faction => {
+                    const factionDiv = document.createElement('div');
+                    factionDiv.className = 'faction';
+                    factionDiv.innerHTML = `
+                        <h2>${faction.name}</h2>
+                        <p>Power: ${faction.power}</p>
+                        <button onclick="removeFaction('${region}', '${faction.name}')">Remove</button>
+                    `;
+                    regionDiv.appendChild(factionDiv);
+                });
+                regionsDiv.appendChild(regionDiv);
+            }
         }
 
         function rollDice() {
-            factions.forEach(faction => {
-                const diceRoll = Math.floor(Math.random() * 20) + 1;
-                faction.power += diceRoll;
+            for (const region in regions) {
+                const totalPower = regions[region].reduce((sum, faction) => sum + faction.power, 0);
+                regions[region].forEach(faction => {
+                    const diceRoll = Math.floor(Math.random() * 20) + 1;
+                    faction.power += diceRoll - Math.floor(totalPower / regions[region].length);
+                });
 
-                // Determine faction interactions
-                const opponentIndex = Math.floor(Math.random() * factions.length);
-                if (opponentIndex !== factions.indexOf(faction)) {
-                    const opponent = factions[opponentIndex];
-                    if (diceRoll > opponent.power / 2) {
-                        faction.power += 5;  // Faction wins and gains power
-                        opponent.power -= 5; // Opponent loses power
-                    }
-                }
-            });
+                // Adjust powers to ensure total power remains constant
+                const adjustedTotalPower = regions[region].reduce((sum, faction) => sum + faction.power, 0);
+                const adjustment = (maxPower - adjustedTotalPower) / regions[region].length;
+                regions[region].forEach(faction => {
+                    faction.power = Math.max(0, faction.power + adjustment);
+                });
+            }
             displayFactions();
         }
+
+        function addFaction(name, region) {
+            const faction = { name, power: 0 };
+            regions[region].push(faction);
+            distributeInitialPower(region);
+            displayFactions();
+        }
+
+        function removeFaction(region, name) {
+            const index = regions[region].findIndex(faction => faction.name === name);
+            if (index !== -1) {
+                regions[region].splice(index, 1);
+                distributeInitialPower(region);
+                displayFactions();
+            }
+        }
+
+        function distributeInitialPower(region) {
+            const totalFactions = regions[region].length;
+            if (totalFactions > 0) {
+                const powerPerFaction = maxPower / totalFactions;
+                regions[region].forEach(faction => faction.power = powerPerFaction);
+            }
+        }
+
+        document.getElementById('addFactionForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const name = document.getElementById('factionName').value;
+            const region = document.getElementById('factionRegion').value;
+            addFaction(name, region);
+        });
 
         window.onload = displayFactions;
     </script>
