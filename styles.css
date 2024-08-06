@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap');
+
 body {
     font-family: 'Cinzel', serif;
     background: url('https://www.transparenttextures.com/patterns/paper-fibers.png'), #3e3e3e;
@@ -17,7 +19,6 @@ body {
 
 h1, h2 {
     text-align: center;
-    font-family: 'IM Fell English SC', serif;
     margin-bottom: 20px;
     color: #c9a338;
 }
